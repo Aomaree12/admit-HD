@@ -32,7 +32,6 @@
     input:focus, select:focus, textarea:focus { border-color: #a78bfa !important; box-shadow: 0 0 0 3px rgba(167,139,250,0.15) !important; outline: none; }
     .btn-primary { background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%); transition: all 0.2s; }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(168,85,247,0.35); }
-    .btn-primary:active { transform: translateY(0); }
     .msg-card { background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%); border-left: 4px solid #c084fc; }
     .fade-in { animation: fadeIn 0.35s ease-out; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -82,7 +81,7 @@
           <div class="sm:col-span-2"><label class="block text-sm font-medium text-txt mb-1.5">อาการสำคัญ</label><textarea id="f-symptoms" rows="2" placeholder="อาการนำที่มาโรงพยาบาล..." class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white resize-none"></textarea></div>
           <div><label class="block text-sm font-medium text-txt mb-1.5">ร.พ.ศูนย์ HD ที่ฟอกประจำ</label><input type="text" id="f-hd" placeholder="ชื่อโรงพยาบาล/ศูนย์ไตเทียม" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"></div>
           <div><label class="block text-sm font-medium text-txt mb-1.5">วันที่ HD ล่าสุด</label><input type="date" id="f-last-hd" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"></div>
-          <div><label class="block text-sm font-medium text-txt mb-1.5">เส้นฟอกเลือดที่ใช้ปัจจุบัน</label><select id="f-access" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"><option value="">-- เลือก --</option><option>AVF (Arteriovenous Fistula)</option><option>AVG (Arteriovenous Graft)</option><option>Perm Cath (Permanent Catheter)</option><option>DLC (Double Lumen Catheter)</option><option>ยังไม่มีเส้นฟอก</option><option>อื่นๆ</option></select></div>
+          <div><label class="block text-sm font-medium text-txt mb-1.5">เส้นฟอกเลือด</label><select id="f-access" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"><option value="">-- เลือก --</option><option>AVF (Arteriovenous Fistula)</option><option>AVG (Arteriovenous Graft)</option><option>Perm Cath (Permanent Catheter)</option><option>DLC (Double Lumen Catheter)</option><option>ยังไม่มีเส้นฟอก</option><option>อื่นๆ</option></select></div>
           <div><label class="block text-sm font-medium text-txt mb-1.5">สิทธิ์การรักษา</label><select id="f-ins" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"><option value="">-- เลือกสิทธิ์ --</option><option>UC (บัตรทอง)</option><option>ประกันสังคม</option><option>ข้าราชการ</option><option>จ่ายตรง</option><option>รัฐวิสาหกิจ</option><option>ชำระเงินเอง</option><option>ประกันชีวิต</option><option>อื่นๆ</option></select></div>
           <div class="sm:col-span-2"><label class="block text-sm font-medium text-txt mb-1.5">หมายเหตุ</label><input type="text" id="f-note" placeholder="ข้อมูลเพิ่มเติม (ถ้ามี)" class="w-full border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-txt bg-white"></div>
         </div>
@@ -99,11 +98,9 @@
     </main>
 
     <div id="toast" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-50"></div>
-
     <div id="modal-overlay" class="hidden fixed inset-0 overlay flex items-center justify-center p-4">
       <div id="modal-card" class="bg-white rounded-3xl card-shadow-lg max-w-lg w-full max-h-[85%] overflow-auto toast-in"></div>
     </div>
-
     <div id="history-overlay" class="hidden fixed inset-0 overlay flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div id="history-panel" class="bg-white rounded-t-3xl sm:rounded-3xl card-shadow-lg w-full sm:max-w-2xl max-h-[90%] overflow-auto toast-in"></div>
     </div>
@@ -112,23 +109,32 @@
 
   <script>
     // ==========================================
-    // ⚠️ นำ URL ของ Web App (Google Apps Script) อันใหม่มาใส่ที่นี่ค่ะ
+    // ⚠️ นำ URL ของ Web App อันใหม่ที่คุณทำไว้มาใส่ที่นี่
     // ==========================================
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx5_3FWKCN8m6nJ6gNY7K8L5tiyvNLLLWTXQGgDiMKylZOxblOqC8M9WZxjwlUekS0yXw/exec'; 
 
-    // ระบบ History แบบ LocalStorage
     let allRecords = JSON.parse(localStorage.getItem('admitRecords')) || [];
 
     function saveToHistory(record) {
-      allRecords.unshift(record); // เพิ่มไว้บนสุด
-      if(allRecords.length > 100) allRecords.pop(); // เก็บไว้ 100 รายการ
+      allRecords.unshift(record); 
+      if(allRecords.length > 100) allRecords.pop(); 
       localStorage.setItem('admitRecords', JSON.stringify(allRecords));
     }
 
-    // กำหนดวันที่เริ่มต้นเป็นวันนี้
     document.getElementById('f-date').valueAsDate = new Date();
 
-    // เมื่อกดปุ่มส่งฟอร์ม
+    // ตัวช่วยสร้างโครงสร้างบรรทัดใน Flex Message
+    function createFlexRow(icon, label, value) {
+      return {
+        type: "box", layout: "baseline", spacing: "sm", margin: "md",
+        contents: [
+          { type: "text", text: icon, size: "sm", flex: 0 },
+          { type: "text", text: label, size: "xs", color: "#999999", flex: 1, weight: "bold" },
+          { type: "text", text: value, wrap: true, color: "#2D1B4E", size: "sm", weight: "bold", flex: 4, align: "right" }
+        ]
+      };
+    }
+
     document.getElementById('admitForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -140,41 +146,68 @@
       btn.disabled = true;
       btn.innerHTML = '<span class="animate-pulse">กำลังบันทึกและส่ง LINE...</span>';
 
-      // รวมข้อมูลดิบทั้ง 10 ช่อง
       const record = {
-        date: g('f-date'),
-        full_name: name,
-        department: g('f-dept'),
-        first_dx: g('f-dx'),
-        symptoms: g('f-symptoms'),
-        hd_center: g('f-hd'),
-        last_hd_date: g('f-last-hd'),
-        vascular_access: g('f-access'),
-        insurance: g('f-ins'),
-        note: g('f-note')
+        date: g('f-date'), full_name: name, department: g('f-dept'), first_dx: g('f-dx'),
+        symptoms: g('f-symptoms'), hd_center: g('f-hd'), last_hd_date: g('f-last-hd'),
+        vascular_access: g('f-access'), insurance: g('f-ins'), note: g('f-note')
+      };
+
+      // 1. สร้าง JSON สำหรับ Flex Message 
+      const flexContents = [];
+      if(record.full_name) flexContents.push({ type: "text", text: record.full_name, weight: "bold", size: "xl", color: "#2D1B4E", margin: "md" });
+      if(record.department) flexContents.push(createFlexRow("🏢", "แผนก", record.department));
+      if(record.first_dx) flexContents.push(createFlexRow("🩺", "First Dx", record.first_dx));
+      if(record.symptoms) flexContents.push(createFlexRow("⚠️", "อาการสำคัญ", record.symptoms));
+      if(record.hd_center) flexContents.push(createFlexRow("🏥", "ศูนย์ HD", record.hd_center));
+      if(record.last_hd_date) flexContents.push(createFlexRow("📅", "HD ล่าสุด", record.last_hd_date));
+      if(record.vascular_access) flexContents.push(createFlexRow("🔗", "เส้นฟอก", record.vascular_access));
+      if(record.insurance) flexContents.push(createFlexRow("🛡️", "สิทธิ์", record.insurance));
+      if(record.note) flexContents.push(createFlexRow("📝", "หมายเหตุ", record.note));
+
+      const flexMessage = {
+        type: "flex", altText: `🏥 Admit Report: ${record.full_name}`,
+        contents: {
+          type: "bubble",
+          header: {
+            type: "box", layout: "vertical", backgroundColor: "#52B8A3", spacing: "none", margin: "none",
+            contents: [
+              { type: "text", text: "🏥 Admit Report", weight: "bold", color: "#FFFFFF", size: "xl" },
+              { type: "text", text: record.date || "-", color: "#D4F1EB", size: "xs", margin: "md" }
+            ]
+          },
+          body: { type: "box", layout: "vertical", spacing: "md", contents: flexContents },
+          footer: {
+            type: "box", layout: "vertical", spacing: "sm",
+            contents: [{ type: "text", text: "📱 ส่งจาก Admit Report System", size: "xs", color: "#999999", align: "center" }]
+          }
+        }
       };
 
       try {
-        // นำข้อมูลแพ็คลง URLSearchParams เพื่อส่งแบบ POST ง่ายๆ
-        const params = new URLSearchParams();
-        Object.keys(record).forEach(key => {
-            params.append(key, record[key]);
-        });
+        // ==========================================
+        // ส่งรอบที่ 1: บันทึกลง Sheet (เข้าเงื่อนไข else ใน GAS)
+        // ==========================================
+        const sheetParams = new URLSearchParams();
+        Object.keys(record).forEach(key => sheetParams.append(key, record[key]));
+        const sheetResponse = fetch(GAS_URL, { method: 'POST', body: sheetParams });
 
-        // ส่งข้อมูลไปให้ Google Apps Script ทีเดียวจบ
-        const gasResult = await fetch(GAS_URL, {
-          method: 'POST',
-          body: params
-        });
-        
-        if (gasResult.ok) {
-          showToast('✓ บันทึกชีตและส่ง LINE สำเร็จ', 'ok');
-          saveToHistory(record); 
-          showPreviewCard(record); // แสดงการ์ดให้ดูว่าส่งอะไรไป
-          resetForm();
-        } else {
-          showToast('⚠️ ส่งข้อมูลสำเร็จ แต่อาจเกิดปัญหาปลายทาง', 'warn');
-        }
+        // ==========================================
+        // ส่งรอบที่ 2: ส่ง Flex Message ไป LINE (เข้าเงื่อนไข if action === 'sendLine')
+        // ==========================================
+        const lineParams = new URLSearchParams();
+        lineParams.append('action', 'sendLine');
+        lineParams.append('groupId', 'C8bfc3d76696780abdfd5f0f0ae0a0f78');
+        lineParams.append('flexMessage', JSON.stringify(flexMessage));
+        const lineResponse = fetch(GAS_URL, { method: 'POST', body: lineParams });
+
+        // รอจนกว่าทั้ง 2 คำสั่งจะทำงานเสร็จ
+        await Promise.all([sheetResponse, lineResponse]);
+
+        showToast('✓ บันทึกชีตและส่ง LINE สำเร็จ', 'ok');
+        saveToHistory(record); 
+        showPreviewCard(record);
+        resetForm();
+
       } catch (err) {
         showToast('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
         console.error(err);
@@ -190,49 +223,12 @@
       document.getElementById('f-date').valueAsDate = new Date();
     }
 
-    // ===== UI Functions (Preview Card & History) =====
+    // ===== UI Functions (Modal, History, Toast) =====
     function showPreviewCard(rec) {
       const formatDate = d => { if (!d) return '-'; const p = d.split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : d; };
-      const row = (icon, label, val) => val ? `
-        <div class="flex items-start gap-2 py-1.5">
-          <i data-lucide="${icon}" class="text-mint4 flex-shrink-0 mt-0.5" style="width:15px;height:15px"></i>
-          <div class="min-w-0"><span class="text-txtlight text-xs">${label}</span><div class="text-txt text-sm font-medium break-words">${val}</div></div>
-        </div>` : '';
+      const row = (icon, label, val) => val ? `<div class="flex items-start gap-2 py-1.5"><i data-lucide="${icon}" class="text-mint4 flex-shrink-0 mt-0.5" style="width:15px;height:15px"></i><div class="min-w-0"><span class="text-txtlight text-xs">${label}</span><div class="text-txt text-sm font-medium break-words">${val}</div></div></div>` : '';
 
-      document.getElementById('modal-card').innerHTML = `
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-mint4 to-mint5 flex items-center justify-center">
-                <i data-lucide="heart-pulse" class="text-white" style="width:18px;height:18px"></i>
-              </div>
-              <div>
-                <div class="text-sm font-bold text-txt">🏥 Admit Report</div>
-                <div class="text-[10px] text-txtlight">${formatDate(rec.date)}</div>
-              </div>
-            </div>
-            <button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
-              <i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i>
-            </button>
-          </div>
-
-          <div class="msg-card rounded-2xl p-4 mb-4">
-            <div class="text-base font-bold text-purple5 mb-2">${rec.full_name || '-'}</div>
-            <div class="divide-y divide-mint1">
-              ${row('building-2','แผนกที่ Admit',rec.department)}
-              ${row('stethoscope','First Dx',rec.first_dx)}
-              ${row('alert-circle','อาการสำคัญ',rec.symptoms)}
-              ${row('hospital','ศูนย์ HD ประจำ',rec.hd_center)}
-              ${row('calendar','วันที่ HD ล่าสุด',rec.last_hd_date)}
-              ${row('cable','เส้นฟอกเลือด',rec.vascular_access)}
-              ${row('shield-check','สิทธิ์การรักษา',rec.insurance)}
-              ${rec.note ? row('message-square','หมายเหตุ',rec.note) : ''}
-            </div>
-          </div>
-          <div class="flex gap-2">
-            <button onclick="closeModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-txt font-medium py-2.5 rounded-xl text-sm transition-colors">ปิด</button>
-          </div>
-        </div>`;
+      document.getElementById('modal-card').innerHTML = `<div class="p-6"><div class="flex items-center justify-between mb-4"><div class="flex items-center gap-2"><div class="w-9 h-9 rounded-xl bg-gradient-to-br from-mint4 to-mint5 flex items-center justify-center"><i data-lucide="heart-pulse" class="text-white" style="width:18px;height:18px"></i></div><div><div class="text-sm font-bold text-txt">🏥 Admit Report</div><div class="text-[10px] text-txtlight">${formatDate(rec.date)}</div></div></div><button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"><i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i></button></div><div class="msg-card rounded-2xl p-4 mb-4"><div class="text-base font-bold text-purple5 mb-2">${rec.full_name || '-'}</div><div class="divide-y divide-mint1">${row('building-2','แผนกที่ Admit',rec.department)}${row('stethoscope','First Dx',rec.first_dx)}${row('alert-circle','อาการสำคัญ',rec.symptoms)}${row('hospital','ศูนย์ HD ประจำ',rec.hd_center)}${row('calendar','วันที่ HD ล่าสุด',rec.last_hd_date)}${row('cable','เส้นฟอกเลือด',rec.vascular_access)}${row('shield-check','สิทธิ์การรักษา',rec.insurance)}${rec.note ? row('message-square','หมายเหตุ',rec.note) : ''}</div></div><div class="flex gap-2"><button onclick="closeModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-txt font-medium py-2.5 rounded-xl text-sm transition-colors">ปิด</button></div></div>`;
       document.getElementById('modal-overlay').classList.remove('hidden');
       lucide.createIcons();
     }
@@ -240,86 +236,41 @@
     function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
     document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
-    function showHistory() {
-      renderHistory();
-      document.getElementById('history-overlay').classList.remove('hidden');
-    }
+    function showHistory() { renderHistory(); document.getElementById('history-overlay').classList.remove('hidden'); }
     function closeHistory() { document.getElementById('history-overlay').classList.add('hidden'); }
     document.getElementById('history-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeHistory(); });
 
     function renderHistory() {
       const panel = document.getElementById('history-panel');
       if (!allRecords.length) {
-        panel.innerHTML = `
-          <div class="p-6 text-center">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-bold text-txt">ประวัติรายงาน (บันทึกในเครื่อง)</h3>
-              <button onclick="closeHistory()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i></button>
-            </div>
-            <i data-lucide="inbox" class="text-mint2 mx-auto mb-2" style="width:40px;height:40px"></i>
-            <p class="text-txtlight text-sm">ยังไม่มีข้อมูลในเครื่องนี้</p>
-          </div>`;
-        lucide.createIcons();
-        return;
+        panel.innerHTML = `<div class="p-6 text-center"><div class="flex items-center justify-between mb-4"><h3 class="text-base font-bold text-txt">ประวัติรายงาน (เครื่องนี้)</h3><button onclick="closeHistory()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i></button></div><i data-lucide="inbox" class="text-mint2 mx-auto mb-2" style="width:40px;height:40px"></i><p class="text-txtlight text-sm">ยังไม่มีข้อมูลในเครื่องนี้</p></div>`;
+        lucide.createIcons(); return;
       }
 
-      let html = `
-        <div class="p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-bold text-txt">ประวัติล่าสุด (${allRecords.length})</h3>
-            <button onclick="closeHistory()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i></button>
-          </div>
-          <div class="space-y-3">`;
-
+      let html = `<div class="p-5"><div class="flex items-center justify-between mb-4"><h3 class="text-base font-bold text-txt">ประวัติล่าสุด (${allRecords.length})</h3><button onclick="closeHistory()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i data-lucide="x" class="text-gray-400" style="width:18px;height:18px"></i></button></div><div class="space-y-3">`;
       allRecords.forEach((rec, i) => {
         const fmtDate = rec.date ? rec.date.split('-').reverse().join('/') : '-';
-        html += `
-          <div class="msg-card rounded-2xl p-3.5 fade-in" style="animation-delay:${i*20}ms">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <div class="font-bold text-sm text-purple5 truncate">${rec.full_name || '-'}</div>
-                <div class="text-xs text-txtlight mt-0.5">${fmtDate} · ${rec.department || '-'}</div>
-                ${rec.symptoms ? `<div class="text-xs text-txt mt-1 line-clamp-2">${rec.symptoms}</div>` : ''}
-              </div>
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <button onclick="viewRecord(${i})" class="w-7 h-7 rounded-lg hover:bg-mint1 flex items-center justify-center" title="ดู">
-                  <i data-lucide="eye" class="text-mint4" style="width:14px;height:14px"></i>
-                </button>
-                <button onclick="deleteRecord(${i})" class="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center" title="ลบจากเครื่อง">
-                  <i data-lucide="trash-2" class="text-red-400" style="width:14px;height:14px"></i>
-                </button>
-              </div>
-            </div>
-          </div>`;
+        html += `<div class="msg-card rounded-2xl p-3.5 fade-in" style="animation-delay:${i*20}ms"><div class="flex items-start justify-between gap-2"><div class="min-w-0"><div class="font-bold text-sm text-purple5 truncate">${rec.full_name || '-'}</div><div class="text-xs text-txtlight mt-0.5">${fmtDate} · ${rec.department || '-'}</div>${rec.symptoms ? `<div class="text-xs text-txt mt-1 line-clamp-2">${rec.symptoms}</div>` : ''}</div><div class="flex items-center gap-1 flex-shrink-0"><button onclick="viewRecord(${i})" class="w-7 h-7 rounded-lg hover:bg-mint1 flex items-center justify-center" title="ดู"><i data-lucide="eye" class="text-mint4" style="width:14px;height:14px"></i></button><button onclick="deleteRecord(${i})" class="w-7 h-7 rounded-lg hover:bg-red-50 flex items-center justify-center" title="ลบจากเครื่อง"><i data-lucide="trash-2" class="text-red-400" style="width:14px;height:14px"></i></button></div></div></div>`;
       });
       html += `</div></div>`;
       panel.innerHTML = html;
       lucide.createIcons();
     }
 
-    function viewRecord(i) {
-      closeHistory();
-      setTimeout(() => showPreviewCard(allRecords[i]), 200);
-    }
-
+    function viewRecord(i) { closeHistory(); setTimeout(() => showPreviewCard(allRecords[i]), 200); }
     function deleteRecord(i) {
       if(confirm('ต้องการลบประวัตินี้ออกจากเครื่องใช่หรือไม่? (ไม่มีผลกับ Google Sheet)')) {
-        allRecords.splice(i, 1);
-        localStorage.setItem('admitRecords', JSON.stringify(allRecords));
-        renderHistory();
+        allRecords.splice(i, 1); localStorage.setItem('admitRecords', JSON.stringify(allRecords)); renderHistory();
       }
     }
 
-    // ===== Toast Notifications =====
     function showToast(msg, type) {
       const el = document.getElementById('toast');
       let toastClass = type === 'warn' ? 'warn-toast' : type === 'error' ? 'error-toast' : 'success-toast';
       el.innerHTML = `<div class="${toastClass} text-white px-5 py-2.5 rounded-2xl card-shadow text-sm font-medium toast-in flex items-center gap-2">${msg}</div>`;
-      el.classList.remove('hidden');
-      setTimeout(() => el.classList.add('hidden'), 3000);
+      el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000);
     }
 
-    // Initialize icons
     lucide.createIcons();
   </script>
 </body>
